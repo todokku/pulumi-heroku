@@ -108,3 +108,5 @@ travis_cron: all
 travis_push: only_build check_clean_worktree publish_tgz publish_packages
 travis_pull_request: all check_clean_worktree
 travis_api: all
+github_push: only_build check_clean_worktree
+github_publish publish_tgz publish_packages

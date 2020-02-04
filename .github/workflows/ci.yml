@@ -1,0 +1,43 @@
+name: Build and publish pulumi-heroku provider
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+        env:
+          GOPATH: $HOME
+
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: prepare
+        run: |
+          git clone https://github.com/pulumi/scripts ${GOPATH}/src/github.com/pulumi/scripts
+          source ${GOPATH}/src/github.com/pulumi/scripts/ci/prepare-environment.sh
+          source ${PULUMI_SCRIPTS}/ci/keep-failed-tests.sh
+
+      - name: Install
+        run: |
+          source ${PULUMI_SCRIPTS}/ci/install-common-toolchain.sh
+          curl -L https://get.pulumi.com/ | bash
+          export PATH=$HOME/.pulumi/bin:$PATH
+          ${PULUMI_SCRIPTS}/ci/ensure-dependencies
+
+      - name: Build plugin
+        run: make github_push
+
+      - name: DEBUG
+        run: ls -l
+
+      - uses: actions/upload-artifact@v1
+        if: success()
+        with:
+          name: artifacts
+          path: dist
